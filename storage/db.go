@@ -1,0 +1,24 @@
+package storage
+
+import (
+	"awesomeProject2/config"
+	"database/sql"
+	"fmt"
+	_ "github.com/lib/pq"
+	"log"
+)
+
+func MyNewSQlStorage(cfg config.Config) (*sql.DB, error) {
+	db, err := sql.Open("postgres", fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
+		cfg.PublicHost, cfg.Port, cfg.DBUser, cfg.DBPass, cfg.DBName))
+	if err != nil {
+		log.Fatal("storage.go, line 11", err)
+	}
+
+	err = db.Ping()
+	if err != nil {
+		return nil, err
+	}
+
+	return db, nil
+}

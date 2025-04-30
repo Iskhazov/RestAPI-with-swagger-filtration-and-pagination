@@ -7,14 +7,12 @@ import (
 )
 
 type Config struct {
-	PublicHost            string
-	DBUser                string
-	DBPass                string
-	Port                  string
-	DBAddr                string
-	DBName                string
-	JWTExprirationSeconds int64
-	JWTSecret             string
+	DBUser string
+	DBPass string
+	DBHost string
+	DBAddr string
+	DBName string
+	DBPort string
 }
 
 var Envs = InitConfig()
@@ -23,13 +21,12 @@ func InitConfig() Config {
 	godotenv.Load()
 
 	return Config{
-		PublicHost: GetEnv("PUBLIC_HOST", "localhost"),
-		DBUser:     GetEnv("DB_USER", "postgres"),
-		DBPass:     GetEnv("DB_PASSWORD", "loloshka777"),
-		Port:       GetEnv("PORT", "5432"),
-		DBName:     GetEnv("DB_NAME", "user_initials"),
-		//JWTSecret:             GetEnv("JWT_SECRET", ""),
-		//JWTExprirationSeconds: GetEnvAsInt("JWT_EXP", 3600*24*7),
+
+		DBUser: GetEnv("DB_USER", "postgres"),
+		DBPass: GetEnv("DB_PASSWORD", "loloshka777"),
+		DBHost: GetEnv("DB_HOST", "localhost"),
+		DBName: GetEnv("DB_NAME", "user_initials"),
+		DBPort: GetEnv("DB_PORT", "5432"),
 	}
 }
 

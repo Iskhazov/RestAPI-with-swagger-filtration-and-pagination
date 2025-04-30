@@ -10,7 +10,7 @@ import (
 
 func MyNewSQlStorage(cfg config.Config) (*sql.DB, error) {
 	db, err := sql.Open("postgres", fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
-		cfg.PublicHost, cfg.Port, cfg.DBUser, cfg.DBPass, cfg.DBName))
+		cfg.DBHost, cfg.DBPort, cfg.DBUser, cfg.DBPass, cfg.DBName))
 	if err != nil {
 		log.Fatal("storage.go, line 11", err)
 	}

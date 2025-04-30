@@ -12,11 +12,11 @@ import (
 
 func main() {
 	db, err := storage.MyNewSQlStorage(config.Config{
-		PublicHost: config.Envs.PublicHost,
-		DBUser:     config.Envs.DBUser,
-		DBPass:     config.Envs.DBPass,
-		Port:       config.Envs.Port,
-		DBName:     config.Envs.DBName,
+		DBHost: config.Envs.DBHost,
+		DBUser: config.Envs.DBUser,
+		DBPass: config.Envs.DBPass,
+		DBPort: config.Envs.DBPort,
+		DBName: config.Envs.DBName,
 	})
 	if err != nil {
 		log.Fatal(err)

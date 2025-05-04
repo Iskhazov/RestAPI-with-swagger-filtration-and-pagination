@@ -3,7 +3,6 @@ package config
 import (
 	"github.com/joho/godotenv"
 	"os"
-	"strconv"
 )
 
 type Config struct {
@@ -33,18 +32,6 @@ func InitConfig() Config {
 func GetEnv(key, fallback string) string {
 	if value, ok := os.LookupEnv(key); ok {
 		return value
-	} else {
-		return fallback
-	}
-}
-
-func GetEnvAsInt(key string, fallback int64) int64 {
-	if value, ok := os.LookupEnv(key); ok {
-		i, err := strconv.ParseInt(value, 10, 64)
-		if err != nil {
-			return fallback
-		}
-		return i
 	} else {
 		return fallback
 	}

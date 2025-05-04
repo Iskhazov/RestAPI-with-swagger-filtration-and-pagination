@@ -2,6 +2,7 @@ package service
 
 import (
 	"awesomeProject2/types"
+	"awesomeProject2/utils"
 	"encoding/json"
 	"log"
 	"math/rand"
@@ -17,8 +18,33 @@ func NewLayerService(store types.PersonStore) *LayerService {
 	return &LayerService{store: store}
 }
 
-func (l *LayerService) GetPeople() ([]types.DBPerson, error) {
-	return l.store.GetPeople()
+func (l *LayerService) GetPersonById(id int) (*types.DBPerson, error) {
+	return l.store.GetPersonById(id)
+}
+
+func (l *LayerService) GetPeople(request types.PageToken, size int) (*types.GetPeopleResponse, error) {
+	people, err := l.store.GetPeople(request, size)
+	if err != nil {
+		return nil, err
+	}
+
+	var token string
+	if len(people) > size {
+		token, err = utils.EncodeToken(&types.PageToken{
+			Id: people[size-1].ID,
+		})
+		if err != nil {
+			return nil, err
+		}
+		people = people[:size]
+	} else {
+		token = ""
+	}
+
+	return &types.GetPeopleResponse{
+		People:        people,
+		NextPageToken: token,
+	}, nil
 }
 
 func (l *LayerService) CreatePerson(person types.NewPerson) error {
@@ -26,8 +52,8 @@ func (l *LayerService) CreatePerson(person types.NewPerson) error {
 	return l.store.CreatePerson(NewDBPerson(person))
 }
 
-func (l *LayerService) PersonChange(person types.DBPerson) error {
-	return l.store.PersonChange(person)
+func (l *LayerService) PersonChange(id int, person types.DBPerson) error {
+	return l.store.PersonChange(id, person)
 }
 
 func (l *LayerService) DeletePerson(id int) error {

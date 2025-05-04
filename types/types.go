@@ -1,24 +1,33 @@
 package types
 
 type PersonStore interface {
-	GetPeople() ([]DBPerson, error)
+	GetPersonById(id int) (*DBPerson, error)
+	GetPeople(request PageToken, size int) ([]DBPerson, error)
 	CreatePerson(DBPerson) error
-	PersonChange(DBPerson) error
-	DeletePerson(id int) error
+	PersonChange(int, DBPerson) error
+	DeletePerson(int) error
 }
 
 type PersonService interface {
-	GetPeople() ([]DBPerson, error)
+	GetPersonById(id int) (*DBPerson, error)
+	GetPeople(request PageToken, size int) (*GetPeopleResponse, error)
 	CreatePerson(person NewPerson) error
-	PersonChange(DBPerson) error
-	DeletePerson(id int) error
+	PersonChange(int, DBPerson) error
+	DeletePerson(int) error
 }
 
-type Person struct {
-	ID         int    `json:"id"`
-	Name       string `json:"name"`
-	Surname    string `json:"surname"`
-	Patronymic string `json:"patronymic"`
+type PageToken struct {
+	Id int `json:"id"`
+}
+
+type GetPeopleRequest struct {
+	PageToken string `json:"page_token"`
+	Size      int    `json:"size"`
+}
+
+type GetPeopleResponse struct {
+	People        []DBPerson `json:"people"`
+	NextPageToken string     `json:"next_page_token"`
 }
 
 type DBPerson struct {
@@ -46,14 +55,14 @@ type AgifyResponse struct {
 type GenderizeResponse struct {
 	Name        string  `json:"name"`
 	Gender      string  `json:"gender"`
-	Propability float32 `json:"probability"`
+	Probability float32 `json:"probability"`
 	Count       int     `json:"count"`
 }
 
 type NationalizeResponse struct {
 	Name        string           `json:"name"`
 	Country     []CountryElement `json:"country"`
-	Propability float32          `json:"probability"`
+	Probability float32          `json:"probability"`
 	Count       int              `json:"count"`
 }
 

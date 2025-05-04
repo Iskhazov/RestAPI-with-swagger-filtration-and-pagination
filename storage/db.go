@@ -12,7 +12,8 @@ func MyNewSQlStorage(cfg config.Config) (*sql.DB, error) {
 	db, err := sql.Open("postgres", fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
 		cfg.DBHost, cfg.DBPort, cfg.DBUser, cfg.DBPass, cfg.DBName))
 	if err != nil {
-		log.Fatal("storage.go, line 11", err)
+		log.Printf("error connecting to DB: %v", err)
+		return nil, err
 	}
 
 	err = db.Ping()

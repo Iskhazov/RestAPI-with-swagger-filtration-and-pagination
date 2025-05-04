@@ -3,9 +3,11 @@ package service
 import (
 	"awesomeProject2/types"
 	"awesomeProject2/utils"
+	"fmt"
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
+	"strconv"
 )
 
 type Handler struct {
@@ -17,18 +19,43 @@ func NewHandler(service types.PersonService) *Handler {
 }
 
 func (h *Handler) Routes(router *mux.Router) {
-	router.HandleFunc("/person", h.GetPeople).Methods(http.MethodGet)
+	router.HandleFunc("/persons", h.GetPeople).Methods(http.MethodPost)
 	router.HandleFunc("/person", h.CreatePerson).Methods(http.MethodPost)
-	router.HandleFunc("/person", h.ChangePerson).Methods(http.MethodPut)
-	router.HandleFunc("/person", h.DeletePerson).Methods(http.MethodDelete)
+	router.HandleFunc("/person/{id}", h.ChangePerson).Methods(http.MethodPut)
+	router.HandleFunc("/person/{id}", h.DeletePerson).Methods(http.MethodDelete)
 }
 
 func (h *Handler) GetPeople(w http.ResponseWriter, r *http.Request) {
-	ps, err := h.service.GetPeople()
+	var request types.GetPeopleRequest
+
+	if err := utils.ParseJSON(r, &request); err != nil {
+		utils.WriteError(w, http.StatusBadRequest, err)
+		return
+	}
+
+	var pageToken types.PageToken
+	if request.PageToken != "" {
+		decodedToken, err := utils.DecodeToken(request.PageToken)
+		if err != nil {
+			utils.WriteError(w, http.StatusBadRequest, err)
+			return
+		}
+		pageToken = *decodedToken
+	} else {
+		pageToken = types.PageToken{}
+	}
+
+	if request.Size > 500 {
+		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("page size must be less than 500"))
+		return
+	}
+
+	ps, err := h.service.GetPeople(pageToken, request.Size)
 	if err != nil {
 		utils.WriteError(w, http.StatusInternalServerError, err)
 		return
 	}
+
 	utils.WriteJSON(w, http.StatusOK, ps)
 }
 
@@ -48,29 +75,53 @@ func (h *Handler) CreatePerson(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) ChangePerson(w http.ResponseWriter, r *http.Request) {
-	var person types.DBPerson
+	params := mux.Vars(r)
+	id := params["id"]
 
-	if err := utils.ParseJSON(r, &person); err != nil {
+	personId, _ := strconv.Atoi(id)
+
+	//check if post exists
+	_, err := h.service.GetPersonById(personId)
+	if err != nil {
+		//Todo обработать
+		utils.WriteError(w, http.StatusNotFound, err)
+		return
+	}
+
+	var ChangePerson types.DBPerson
+	if err := utils.ParseJSON(r, &ChangePerson); err != nil {
 		utils.WriteError(w, http.StatusBadRequest, err)
 		return
 	}
 
-	err := h.service.PersonChange(person)
+	err = h.service.PersonChange(personId, ChangePerson)
 	if err != nil {
-		log.Fatal("Routes.go: Failed to change person with id ", person.ID)
+		utils.WriteError(w, http.StatusInternalServerError, err)
+		return
 	}
 	utils.WriteJSON(w, http.StatusOK, "Success")
 }
 
 func (h *Handler) DeletePerson(w http.ResponseWriter, r *http.Request) {
-	var person types.Person
+
+	params := mux.Vars(r)
+	id := params["id"]
+
+	personId, _ := strconv.Atoi(id)
+
+	//check if post exists
+	person, err := h.service.GetPersonById(personId)
+	if err != nil {
+		utils.WriteError(w, http.StatusNotFound, err)
+		return
+	}
 
 	if err := utils.ParseJSON(r, &person); err != nil {
 		utils.WriteError(w, http.StatusBadRequest, err)
 		return
 	}
 
-	err := h.service.DeletePerson(person.ID)
+	err = h.service.DeletePerson(personId)
 	if err != nil {
 		log.Fatal("Routes.go: Failed to delete person with id ", person.ID)
 	}

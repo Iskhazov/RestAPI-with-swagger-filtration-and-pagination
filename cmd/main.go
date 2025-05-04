@@ -9,7 +9,6 @@ import (
 )
 
 func main() {
-
 	db, err := storage.MyNewSQlStorage(config.Config{
 		DBHost: config.Envs.DBHost,
 		DBUser: config.Envs.DBUser,
@@ -27,4 +26,5 @@ func main() {
 	if err := server.Run(); err != nil {
 		log.Fatal(err)
 	}
+
 }

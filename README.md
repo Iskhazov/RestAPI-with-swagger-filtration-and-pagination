@@ -25,7 +25,7 @@ make run
 Link to Swagger: [http://localhost:8080/swagger/index.html#/](http://localhost:8080/swagger/index.html#/)
 ## API Endpoints
 POST /api/v1/person - Creates a new person.  
-GET /api/v1/persons - Get all people.  
+POST /api/v1/persons - Get all people.  
 PUT /api/v1/persons/{id} - Update a person.  
 DELETE /api/v1/persons/{id} - Delete a person.  
 

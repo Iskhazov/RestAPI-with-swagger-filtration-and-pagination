@@ -1,0 +1,241 @@
+basePath: /api/v1
+definitions:
+  types.DBPerson:
+    properties:
+      age:
+        type: integer
+      country:
+        type: string
+      gender:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      patronymic:
+        type: string
+      surname:
+        type: string
+    type: object
+  types.ErrorResponse:
+    properties:
+      error:
+        example: something wrong
+        type: string
+    type: object
+  types.Filter:
+    properties:
+      field:
+        example: gender
+        type: string
+      values:
+        example:
+        - male/female
+        items:
+          type: string
+        type: array
+    type: object
+  types.GetPeopleRequest:
+    properties:
+      filters:
+        items:
+          $ref: '#/definitions/types.Filter'
+        type: array
+      page_token:
+        example: ""
+        type: string
+      size:
+        example: 20
+        type: integer
+    type: object
+  types.GetPeopleResponse:
+    properties:
+      next_page_token:
+        type: string
+      people:
+        items:
+          $ref: '#/definitions/types.DBPerson'
+        type: array
+    type: object
+  types.NewPerson:
+    properties:
+      name:
+        example: Ivan
+        type: string
+      patronymic:
+        example: Ivanovich
+        type: string
+      surname:
+        example: Ivanov
+        type: string
+    required:
+    - name
+    - patronymic
+    - surname
+    type: object
+  types.SwagPerson:
+    properties:
+      age:
+        example: 30
+        type: integer
+      country:
+        example: USA
+        type: string
+      gender:
+        example: male
+        type: string
+      name:
+        example: John
+        type: string
+      patronymic:
+        example: Ivanovich
+        type: string
+      surname:
+        example: Doe
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: REST API for managing a list of people with support for filtering,
+    pagination, and CRUD operations.
+  title: Test Task API for Effective Mobile
+  version: "1.0"
+paths:
+  /person:
+    post:
+      consumes:
+      - application/json
+      description: Creates a new person, enriches data using external APIs, and saves
+        the result to the database.
+      parameters:
+      - description: Person to create
+        in: body
+        name: person
+        required: true
+        schema:
+          $ref: '#/definitions/types.NewPerson'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Success
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+      summary: Create a new person
+      tags:
+      - people
+  /person/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Deletes a person by ID
+      parameters:
+      - description: Person ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+      summary: Delete a person
+      tags:
+      - people
+    put:
+      consumes:
+      - application/json
+      description: Updates the information of a person by ID
+      parameters:
+      - description: Person ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Updated person data
+        in: body
+        name: person
+        required: true
+        schema:
+          $ref: '#/definitions/types.SwagPerson'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+      summary: Update a person
+      tags:
+      - people
+  /persons:
+    post:
+      consumes:
+      - application/json
+      description: |-
+        The request accepts filters, a pagination token, and the number of items to return (size). The size must not exceed 100.
+        For the first request, send an empty `page_token`. The response will include a `next_page_token`, which should be used in the subsequent request to fetch the next page.
+        You can filter results by age and gender.
+        To filter by age, set `"age"` as the field and provide one or two values: e.g., `["20"]` for a single value or `["20", "50"]` for a range.
+        To filter by gender, set `"gender"` as the field and provide one value: `"male"` or `"female"`.
+        To retrieve both genders, omit the gender filter entirely.
+      parameters:
+      - description: Pagination and filtering options
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/types.GetPeopleRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/types.GetPeopleResponse'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+      summary: Get all people
+      tags:
+      - people
+swagger: "2.0"

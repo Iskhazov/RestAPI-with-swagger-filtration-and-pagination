@@ -1,3 +1,8 @@
+// @title Test Task API for Effective Mobile
+// @version 1.0
+// @description REST API for managing a list of people with support for filtering, pagination, and CRUD operations.
+// @host localhost:8080
+// @BasePath /api/v1
 package main
 
 import (

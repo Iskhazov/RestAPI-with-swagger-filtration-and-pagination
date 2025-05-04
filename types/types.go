@@ -17,8 +17,8 @@ type PersonService interface {
 }
 
 type Filter struct {
-	Field  string   `json:"field"`
-	Values []string `json:"values"`
+	Field  string   `json:"field" example:"gender"`
+	Values []string `json:"values" example:"male/female"`
 }
 
 type PageToken struct {
@@ -26,8 +26,8 @@ type PageToken struct {
 }
 
 type GetPeopleRequest struct {
-	PageToken string   `json:"page_token"`
-	Size      int      `json:"size"`
+	PageToken string   `json:"page_token" example:""`
+	Size      int      `json:"size" example:"20"`
 	Filters   []Filter `json:"filters"`
 }
 
@@ -47,9 +47,9 @@ type DBPerson struct {
 }
 
 type NewPerson struct {
-	Name       string `json:"name" validate:"required"`
-	Surname    string `json:"surname" validate:"required"`
-	Patronymic string `json:"patronymic" validate:"required"`
+	Name       string `json:"name" validate:"required" example:"Ivan"`
+	Surname    string `json:"surname" validate:"required" example:"Ivanov"`
+	Patronymic string `json:"patronymic" validate:"required" example:"Ivanovich"`
 }
 
 type AgifyResponse struct {
@@ -75,4 +75,17 @@ type NationalizeResponse struct {
 type CountryElement struct {
 	CountryID   string  `json:"country_id"`
 	Probability float64 `json:"probability"`
+}
+
+type SwagPerson struct {
+	Name       string `json:"name" example:"John"`
+	Surname    string `json:"surname" example:"Doe"`
+	Patronymic string `json:"patronymic" example:"Ivanovich"`
+	Age        int    `json:"age" example:"30"`
+	Gender     string `json:"gender" example:"male"`
+	Country    string `json:"country" example:"USA"`
+}
+
+type ErrorResponse struct {
+	Error string `json:"error" example:"something wrong"`
 }

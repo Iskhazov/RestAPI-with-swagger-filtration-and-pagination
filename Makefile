@@ -16,3 +16,6 @@ migrate-up:
 
 migrate-down:
 	@go run cmd/migrate/main.go down
+
+gen-swagger:
+	@swag init -g main.go --parseDependency --parseInternal --dir ./

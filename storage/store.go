@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 	_ "github.com/lib/pq"
+	"log"
 )
 
 type Store struct {
@@ -56,6 +57,7 @@ func (s *Store) GetPeople(request types.PageToken, size int, filters []types.Fil
 	fmt.Println(query, args)
 	rows, err := s.db.Query(query, args...)
 	if err != nil {
+		log.Printf("Error getting people: %v", err)
 		return nil, err
 	}
 

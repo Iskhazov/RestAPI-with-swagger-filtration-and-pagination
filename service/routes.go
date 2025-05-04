@@ -10,10 +10,12 @@ import (
 	"strconv"
 )
 
+// Handler struct holds the reference to the service layer
 type Handler struct {
 	service types.PersonService
 }
 
+// NewHandler creates a new Handler instance
 func NewHandler(service types.PersonService) *Handler {
 	return &Handler{service: service}
 }
@@ -41,9 +43,11 @@ func (h *Handler) Routes(router *mux.Router) {
 // @Failure 500 {object} types.ErrorResponse
 // @Router /persons [post]
 func (h *Handler) GetPeople(w http.ResponseWriter, r *http.Request) {
+
 	var request types.GetPeopleRequest
 
 	if err := utils.ParseJSON(r, &request); err != nil {
+		log.Printf("[ERROR] Failed to parse request JSON: %v", err)
 		utils.WriteError(w, http.StatusBadRequest, err)
 		return
 	}
@@ -52,6 +56,7 @@ func (h *Handler) GetPeople(w http.ResponseWriter, r *http.Request) {
 	if request.PageToken != "" {
 		decodedToken, err := utils.DecodeToken(request.PageToken)
 		if err != nil {
+			log.Printf("[ERROR] Failed to decode page token: %v", err)
 			utils.WriteError(w, http.StatusBadRequest, err)
 			return
 		}
@@ -61,16 +66,19 @@ func (h *Handler) GetPeople(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if request.Size > 100 {
+		log.Printf("[WARN] Page size exceeded: %d", request.Size)
 		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("page size must be less than 100"))
 		return
 	}
 
 	ps, err := h.service.GetPeople(pageToken, request.Size, request.Filters)
 	if err != nil {
+		log.Printf("[ERROR] Failed to get people: %v", err)
 		utils.WriteError(w, http.StatusInternalServerError, err)
 		return
 	}
 
+	log.Printf("[INFO] Successfully retrieved %d people", len(ps.People))
 	utils.WriteJSON(w, http.StatusOK, ps)
 }
 
@@ -86,17 +94,21 @@ func (h *Handler) GetPeople(w http.ResponseWriter, r *http.Request) {
 // @Failure 500 {object} types.ErrorResponse
 // @Router /person [post]
 func (h *Handler) CreatePerson(w http.ResponseWriter, r *http.Request) {
-	var person types.NewPerson
 
+	var person types.NewPerson
 	if err := utils.ParseJSON(r, &person); err != nil {
+		log.Printf("[ERROR] Failed to parse person JSON: %v", err)
 		utils.WriteError(w, http.StatusBadRequest, err)
 		return
 	}
-	err := h.service.CreatePerson(person)
-	if err != nil {
+
+	if err := h.service.CreatePerson(person); err != nil {
+		log.Printf("[ERROR] Failed to create person: %v", err)
 		utils.WriteError(w, http.StatusInternalServerError, err)
 		return
 	}
+
+	log.Println("[INFO] Person created successfully")
 	utils.WriteJSON(w, http.StatusCreated, "Success")
 }
 
@@ -114,30 +126,33 @@ func (h *Handler) CreatePerson(w http.ResponseWriter, r *http.Request) {
 // @Failure 500 {object} types.ErrorResponse
 // @Router /person/{id} [put]
 func (h *Handler) ChangePerson(w http.ResponseWriter, r *http.Request) {
+
 	params := mux.Vars(r)
 	id := params["id"]
-
 	personId, _ := strconv.Atoi(id)
 
-	//check if post exists
+	// Check if the person exists before updating
 	_, err := h.service.GetPersonById(personId)
 	if err != nil {
-		//Todo обработать
+		log.Printf("[WARN] Person with ID %d not found", personId)
 		utils.WriteError(w, http.StatusNotFound, err)
 		return
 	}
 
-	var ChangePerson types.DBPerson
-	if err := utils.ParseJSON(r, &ChangePerson); err != nil {
+	var updatedPerson types.DBPerson
+	if err := utils.ParseJSON(r, &updatedPerson); err != nil {
+		log.Printf("[ERROR] Failed to parse updated person JSON: %v", err)
 		utils.WriteError(w, http.StatusBadRequest, err)
 		return
 	}
 
-	err = h.service.PersonChange(personId, ChangePerson)
-	if err != nil {
+	if err := h.service.PersonChange(personId, updatedPerson); err != nil {
+		log.Printf("[ERROR] Failed to update person with ID %d: %v", personId, err)
 		utils.WriteError(w, http.StatusInternalServerError, err)
 		return
 	}
+
+	log.Printf("[INFO] Person with ID %d updated successfully", personId)
 	utils.WriteJSON(w, http.StatusOK, "Success")
 }
 
@@ -154,22 +169,25 @@ func (h *Handler) ChangePerson(w http.ResponseWriter, r *http.Request) {
 // @Failure 500 {object} types.ErrorResponse
 // @Router /person/{id} [delete]
 func (h *Handler) DeletePerson(w http.ResponseWriter, r *http.Request) {
+
 	params := mux.Vars(r)
 	id := params["id"]
-
 	personId, _ := strconv.Atoi(id)
 
-	//check if person exists
+	// Check if person exists before deletion
 	person, err := h.service.GetPersonById(personId)
 	if err != nil {
+		log.Printf("[WARN] Person with ID %d not found", personId)
 		utils.WriteError(w, http.StatusNotFound, err)
 		return
 	}
 
-	err = h.service.DeletePerson(person.ID)
-	if err != nil {
-		log.Fatal("Routes.go: Failed to delete person with id ", person.ID)
+	if err := h.service.DeletePerson(person.ID); err != nil {
+		log.Printf("[ERROR] Failed to delete person with ID %d: %v", personId, err)
+		utils.WriteError(w, http.StatusInternalServerError, err)
+		return
 	}
-	utils.WriteJSON(w, http.StatusOK, "Success")
 
+	log.Printf("[INFO] Person with ID %d deleted successfully", personId)
+	utils.WriteJSON(w, http.StatusOK, "Success")
 }

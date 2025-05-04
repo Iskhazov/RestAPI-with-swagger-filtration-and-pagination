@@ -22,8 +22,8 @@ func (l *LayerService) GetPersonById(id int) (*types.DBPerson, error) {
 	return l.store.GetPersonById(id)
 }
 
-func (l *LayerService) GetPeople(request types.PageToken, size int) (*types.GetPeopleResponse, error) {
-	people, err := l.store.GetPeople(request, size)
+func (l *LayerService) GetPeople(request types.PageToken, size int, filters []types.Filter) (*types.GetPeopleResponse, error) {
+	people, err := l.store.GetPeople(request, size, filters)
 	if err != nil {
 		return nil, err
 	}

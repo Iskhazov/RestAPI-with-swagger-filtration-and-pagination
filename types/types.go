@@ -2,7 +2,7 @@ package types
 
 type PersonStore interface {
 	GetPersonById(id int) (*DBPerson, error)
-	GetPeople(request PageToken, size int) ([]DBPerson, error)
+	GetPeople(request PageToken, size int, filters []Filter) ([]DBPerson, error)
 	CreatePerson(DBPerson) error
 	PersonChange(int, DBPerson) error
 	DeletePerson(int) error
@@ -10,10 +10,15 @@ type PersonStore interface {
 
 type PersonService interface {
 	GetPersonById(id int) (*DBPerson, error)
-	GetPeople(request PageToken, size int) (*GetPeopleResponse, error)
+	GetPeople(request PageToken, size int, filters []Filter) (*GetPeopleResponse, error)
 	CreatePerson(person NewPerson) error
 	PersonChange(int, DBPerson) error
 	DeletePerson(int) error
+}
+
+type Filter struct {
+	Field  string   `json:"field"`
+	Values []string `json:"values"`
 }
 
 type PageToken struct {
@@ -21,8 +26,9 @@ type PageToken struct {
 }
 
 type GetPeopleRequest struct {
-	PageToken string `json:"page_token"`
-	Size      int    `json:"size"`
+	PageToken string   `json:"page_token"`
+	Size      int      `json:"size"`
+	Filters   []Filter `json:"filters"`
 }
 
 type GetPeopleResponse struct {

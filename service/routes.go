@@ -50,7 +50,8 @@ func (h *Handler) GetPeople(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ps, err := h.service.GetPeople(pageToken, request.Size)
+	fmt.Println(request.Filters)
+	ps, err := h.service.GetPeople(pageToken, request.Size, request.Filters)
 	if err != nil {
 		utils.WriteError(w, http.StatusInternalServerError, err)
 		return

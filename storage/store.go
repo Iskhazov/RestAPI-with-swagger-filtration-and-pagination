@@ -17,14 +17,44 @@ func NewStore(db *sql.DB) *Store {
 
 // Разобраться с внешним API
 
-func (s *Store) GetPeople(request types.PageToken, size int) ([]types.DBPerson, error) {
+func (s *Store) GetPeople(request types.PageToken, size int, filters []types.Filter) ([]types.DBPerson, error) {
 	query := `
 	SELECT * FROM people
 	WHERE id > $1
-	ORDER BY id
-	LIMIT $2
 	`
-	rows, err := s.db.Query(query, request.Id, size+1)
+
+	args := []interface{}{request.Id}
+	paramIndex := 2
+	for _, filter := range filters {
+		if filter.Field == "age" && len(filter.Values) > 0 {
+			if len(filter.Values) == 1 {
+				query += fmt.Sprintf(" AND age = $%d", paramIndex)
+				args = append(args, filter.Values[0])
+				paramIndex++
+			} else if len(filter.Values) == 2 {
+				query += fmt.Sprintf(" AND age >= $%d", paramIndex)
+				paramIndex++
+				query += fmt.Sprintf(" AND age <= $%d", paramIndex)
+				paramIndex++
+				args = append(args, filter.Values[0], filter.Values[1])
+			}
+		}
+
+		if filter.Field == "gender" {
+			query += fmt.Sprintf(" AND gender = $%d", paramIndex)
+			args = append(args, filter.Values[0])
+			paramIndex++
+		}
+
+	}
+
+	query += fmt.Sprintf(`
+	ORDER BY id
+	LIMIT $%d`, paramIndex)
+	args = append(args, size+1)
+
+	fmt.Println(query, args)
+	rows, err := s.db.Query(query, args...)
 	if err != nil {
 		return nil, err
 	}

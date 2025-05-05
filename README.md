@@ -3,7 +3,7 @@ REST API for managing a list of people with support for filtering, pagination, a
 ## Setup
 1. Clone repository
 ```sh
-git clone https://github.com/Iskhazov/Test-Task-For-Effective-Mobile.git
+git clone https://github.com/Iskhazov/RestAPI-with-swagger-filtration-and-pagination.git
 cd awesomeProject2
 ```
 2. Install Dependencies

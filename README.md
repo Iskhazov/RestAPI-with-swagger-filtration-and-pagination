@@ -1,4 +1,4 @@
-# Test-Task-For-Effective-Mobile
+# RestAPI-with-swagger-filtration-and-pagination
 REST API for managing a list of people with support for filtering, pagination, and CRUD operations.
 ## Setup
 1. Clone repository
